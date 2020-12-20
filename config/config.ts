@@ -6,11 +6,6 @@ import routes from './routes';
 const path = require('path');
 
 const { REACT_APP_ENV } = process.env;
-// 'editor.worker': 'monaco-editor/esm/vs/editor/editor.worker.js',
-// 'json.worker': 'monaco-editor/esm/vs/language/json/json.worker',
-// 'css.worker': 'monaco-editor/esm/vs/language/css/css.worker',
-// 'html.worker': 'monaco-editor/esm/vs/language/html/html.worker',
-// 'ts.worker': 'monaco-editor/esm/vs/language/typescript/ts.worker'
 export default defineConfig({
   chainWebpack(config, { env, webpack, createCSSRule }) {
     config
@@ -67,7 +62,7 @@ export default defineConfig({
   layout: {
     name: '在线编辑功能',
     locale: true,
-    siderWidth: 208,
+    siderWidth: 0,
     ...defaultSettings,
   },
   locale: {

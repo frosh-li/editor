@@ -3,7 +3,19 @@
     path: "/editor",
     name: "editor",
     icon: "smile",
-    component: './editor/index',
+    component: '../layouts/basic',
+    layout: {
+      hideMenu: true,
+      hideNav: true,
+      hideFooter: true,
+    },
+    routes: [
+      {
+        path: "/editor/",
+        component: './editor/index',
+      }
+    ]
+    
   },
   {
     path: '/welcome',
@@ -34,6 +46,7 @@
   },
   {
     path: '/',
+    component: '../layouts/basic',
     redirect: '/editor',
   },
   {

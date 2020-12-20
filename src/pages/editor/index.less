@@ -1,22 +1,71 @@
+.main {
+    height: 100vh;
+}
+.toolbar {
+    height: 40px;
+    line-height: 40px;
+    background: #414339;
+}
 .container {
-    height: 600px;
+    height: calc(100vh - 40px);
     display: flex;
-    background: #333;
-    padding: 10px;
+    background: #272822;
+    padding: 10px 0 10px;
+    :global{
+        .ant-tabs-nav {
+            margin-bottom: 0;
+        }
+        .ant-tabs-card > .ant-tabs-nav .ant-tabs-tab, .ant-tabs-card > div > .ant-tabs-nav .ant-tabs-tab {
+            background-color: #34352f;
+            color: white;
+            border:none;
+            font-size: 18px;
+        }
+        .ant-tabs-card > .ant-tabs-nav .ant-tabs-tab-active, .ant-tabs-card > div > .ant-tabs-nav .ant-tabs-tab-active {
+            background-color:#272822;
+            color: white;
+            border:none;
+            font-size: 20px;
+        }
+        .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+            color: white;
+        }
+        .ant-tabs-tab-remove {
+            color: rgba(255, 255, 255 , 0.5)
+        }
+        .ant-tabs-top > .ant-tabs-nav::before, .ant-tabs-bottom > .ant-tabs-nav::before, .ant-tabs-top > div > .ant-tabs-nav::before, .ant-tabs-bottom > div > .ant-tabs-nav::before{
+            border-bottom: 0;
+        }
+        
+    }
     .files{
         width: 250px;
         height: 100%;
+        overflow-y: scroll;
         color: white;
         font-family: "monaco";
         font-size: 18px;
+        background-color: #1e1f1c;
         .file {
             cursor: pointer;
             line-height: 30px;
             height: 30px;
+            padding-left: 10px;
+            &:hover {
+                background-color: #414339;
+            }
         }
     }
-    .editor {
+    .tabs {
         height: 100%;
         flex: 1;
     }
+    .editor {
+        height: 100%;
+    }
+}
+
+.tabContent{
+    height:800px;
+    
 }

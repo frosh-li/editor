@@ -1,9 +1,7 @@
 import React from 'react';
-import { Settings as LayoutSettings, PageLoading } from '@ant-design/pro-layout';
+import { Settings as LayoutSettings} from '@ant-design/pro-layout';
 import { notification } from 'antd';
 import { history, RequestConfig, RunTimeLayoutConfig } from 'umi';
-import RightContent from '@/components/RightContent';
-import Footer from '@/components/Footer';
 import { ResponseError } from 'umi-request';
 import { queryCurrent } from './services/user';
 import defaultSettings from '../config/defaultSettings';
@@ -31,7 +29,7 @@ self.MonacoEnvironment = {
  * 获取用户信息比较慢的时候会展示一个 loading
  */
 export const initialStateConfig = {
-  loading: <PageLoading />,
+  loading: null,
 };
 
 export async function getInitialState(): Promise<{
@@ -65,12 +63,14 @@ export async function getInitialState(): Promise<{
 
 export const layout: RunTimeLayoutConfig = ({ initialState }) => {
   return {
-    rightContentRender: () => <RightContent />,
+    rightContentRender: () => null,
     disableContentMargin: false,
-    footerRender: () => <Footer />,
+    footerRender: () => null,
     onPageChange: () => {
     },
-    menuHeaderRender: undefined,
+    pure: true,
+    menuHeaderRender: null,
+    headerRender: () => null,
     // 自定义 403 页面
     // unAccessible: <div>unAccessible</div>,
     ...initialState?.settings,
