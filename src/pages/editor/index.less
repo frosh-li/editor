@@ -5,27 +5,30 @@
     height: 40px;
     line-height: 40px;
     background: #414339;
+    > button {
+        margin-left: 20px;
+    }
 }
 .container {
-    height: calc(100vh - 40px);
     display: flex;
-    background: #272822;
+    height: calc(100vh - 40px);
     padding: 10px 0 10px;
+    background: #272822;
     :global{
         .ant-tabs-nav {
             margin-bottom: 0;
         }
         .ant-tabs-card > .ant-tabs-nav .ant-tabs-tab, .ant-tabs-card > div > .ant-tabs-nav .ant-tabs-tab {
-            background-color: #34352f;
             color: white;
-            border:none;
+            background-color: #34352f;
             font-size: 18px;
+            border:none;
         }
         .ant-tabs-card > .ant-tabs-nav .ant-tabs-tab-active, .ant-tabs-card > div > .ant-tabs-nav .ant-tabs-tab-active {
-            background-color:#272822;
             color: white;
-            border:none;
+            background-color:#272822;
             font-size: 20px;
+            border:none;
         }
         .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
             color: white;
@@ -43,22 +46,31 @@
         height: 100%;
         overflow-y: scroll;
         color: white;
-        font-family: "monaco";
         font-size: 18px;
+        font-family: "monaco";
         background-color: #1e1f1c;
         .file {
-            cursor: pointer;
-            line-height: 30px;
             height: 30px;
+            line-height: 30px;
+            cursor: pointer;
+            display: flex;
             padding-left: 10px;
             &:hover {
                 background-color: #414339;
             }
+            align-items: center;
+        }
+        .cfile {
+            flex: 1;
+            margin-left: 10px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
     }
     .tabs {
-        height: 100%;
         flex: 1;
+        height: 100%;
     }
     .editor {
         height: 100%;
@@ -66,6 +78,5 @@
 }
 
 .tabContent{
-    height:800px;
-    
+    height: 100vh;
 }

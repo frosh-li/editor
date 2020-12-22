@@ -12,6 +12,14 @@ export default {
       changeOrigin: true,
       pathRewrite: { '^': '' },
     },
+    '/socket.io/': {
+      target: 'ws://127.0.0.1:7001',//后端目标接口地址
+      changeOrigin: true,//是否允许跨域
+      pathRewrite: {
+        '^': '',//重写,
+      },
+      ws: true //开启ws, 如果是http代理此处可以不用设置
+    }
   },
   test: {
     '/api/': {

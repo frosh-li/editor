@@ -15,7 +15,7 @@ export default defineConfig({
         .end()
         .output
         .globalObject("self")
-        .path(path.resolve(__dirname,'dist'))
+        .path(path.resolve(__dirname,'../dist'))
         .filename('[name].bundle.js');
     config
       // 修改 entry 配置
@@ -24,7 +24,7 @@ export default defineConfig({
         .end()
         .output
         .globalObject("self")
-        .path(path.resolve(__dirname,'dist'))
+        .path(path.resolve(__dirname,'../dist'))
         .filename('[name].bundle.js');
     config
       // 修改 entry 配置
@@ -33,7 +33,7 @@ export default defineConfig({
         .end()
         .output
         .globalObject("self")
-        .path(path.resolve(__dirname,'dist'))
+        .path(path.resolve(__dirname,'../dist'))
         .filename('[name].bundle.js');
     config
       // 修改 entry 配置
@@ -42,7 +42,7 @@ export default defineConfig({
         .end()
         .output
         .globalObject("self")
-        .path(path.resolve(__dirname,'dist'))
+        .path(path.resolve(__dirname,'../dist'))
         .filename('[name].bundle.js');
     config
       // 修改 entry 配置
@@ -51,7 +51,7 @@ export default defineConfig({
         .end()
         .output
         .globalObject("self")
-        .path(path.resolve(__dirname,'dist'))
+        .path(path.resolve(__dirname,'../dist'))
         .filename('[name].bundle.js');
   },
   hash: true,
