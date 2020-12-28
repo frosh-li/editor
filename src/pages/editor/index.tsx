@@ -1,209 +1,141 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { PageContainer } from '@ant-design/pro-layout';
-import { Tabs, Button, message, Modal, Input, Form, Tooltip } from 'antd';
-import { useIntl, FormattedMessage } from 'umi';
-import * as monaco from 'monaco-editor';
+import { Tabs, message, Modal, Input, Form } from 'antd';
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
 import styles from './index.less';
-
-import { getFileList, getFileContent, saveFileContent, restartServer, sendCommand, getCommand } from './service';
-import { ProfileOutlined, ProfileTwoTone, ReloadOutlined, RightOutlined } from '@ant-design/icons';
-// Generate four random hex digits. 
-function S4() { 
-  return (((1+Math.random())*0x10000)|0).toString(16).substring(1); 
-}; 
-// Generate a pseudo-GUID by concatenating random hexadecimal. 
-function guid() { 
-  return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4()); 
-};
-
-const cuuid = guid();
+import { Pane } from './data.d';
+import FilesTree from './FilesTree';
+import MainBar from './MainBar';
+import { useToolbarActions } from './hooks/toolbar';
+import { useSocket } from './hooks/socket';
+import { getFileList, getFileContent, saveFileContent } from './service';
 
 const { TabPane } = Tabs;
 const editors = {};
 
-interface Pane {
-  key: string;
-  title: string;
-}
-
-interface IFile {
-  data: string;
-  isDirectory: boolean;
-}
-
-
-let socket;
-let lastContent = new Map();
+let currentfile = '';
+// 设置是否不更新
+const freeHanldeChange = new Map();
 
 export default (): React.ReactNode => {
-  
   const [, updateState] = useState();
   const forceUpdate = useCallback(() => updateState({}), []);
-  const [files, setFiles] = useState<IFile[]>([]);
-  const [activeKey, setActiveKey] = useState<string>("");
-  
+  const {
+    files,
+    setFiles,
+    activeKey,
+    setActiveKey,
+    saving,
+    reloading,
+    saveFile,
+    restart,
+    refresh,
+  } = useToolbarActions();
   const [panes, setPanes] = useState<Pane[]>([]);
   const panesRef = useRef(panes);
-
-  const [saving, setSaving] = useState<boolean>(false)
-
+  const { emit } = useSocket();
   // 弹窗相关
-  const [isCreateModalVisible, setCreateModalStatus] = useState<boolean>(false) 
+  const [isCreateModalVisible, setCreateModalStatus] = useState<boolean>(false);
   const [form] = Form.useForm();
-  
 
-  const disconnectWS = () => {
-
-  }
-
-
-  const connectWS = () => {
-    socket = require('socket.io-client')("/", {
-      transports: ['websocket'],
-      autoConnect: true,
-    });
-    console.log('socket', socket)
-    socket.on('connect', function(){
-      console.log('connect')
-      socket.emit('chat', 'hello world!');
-    });
-    socket.on('sync', function(data: any){
-      const cdata = JSON.parse(data);
-      const changes = JSON.parse(cdata.data);
-      console.log('sync from socket', data)
-      let editor = editors[`editor_file_${cdata.filename}`];
-      editor.executeEdits(lastContent.get(cdata.filename), changes)
-      lastContent.set(cdata.filename,editor.getValue());
-    });
-    socket.on('disconnect', function(){
-      console.log('disconnect')
-    });
-    socket.on('error', function(e: any) {
-      console.log(e)
-    })
-  }
+  const changeModelContent = (event: monaco.editor.IModelContentChangedEvent): void => {
+    if (freeHanldeChange.get(currentfile)) {
+      return;
+    }
+    emit(
+      'execCmd',
+      JSON.stringify({
+        filename: currentfile,
+        data: JSON.stringify(event.changes),
+      }),
+    );
+  };
 
   useEffect(() => {
     getFileList().then(setFiles);
-    connectWS();
     return () => {
-        for(let key in editors) {
-            editors[key].dispose()
-        }
-        disconnectWS()
+      Object.values(editors).forEach((editor) => {
+        editor.dispose();
+      });
     };
   }, []);
 
-  const onChange = (activeKey: string) => {
-    setActiveKey(activeKey);
+  const onChange = (aKey: string) => {
+    setActiveKey(aKey);
   };
 
   const handleOk = () => {
-    const filename = form.getFieldValue("filename");
-    console.log(filename);
-    saveFileContent(filename, '').then(() => {
-      message.success("文件新建成功");
-      getFileList().then(setFiles);
-      setCreateModalStatus(false);
-    }).catch(e => {
-      setCreateModalStatus(false);
-    })
-  }
+    const filename = form.getFieldValue('filename');
+    saveFileContent(filename, '')
+      .then(() => {
+        message.success('文件新建成功');
+        getFileList().then(setFiles);
+        setCreateModalStatus(false);
+      })
+      .catch(() => {
+        setCreateModalStatus(false);
+      });
+  };
 
   const handleCancel = () => {
     setCreateModalStatus(false);
-  }
+  };
 
   const openCreate = () => {
     setCreateModalStatus(true);
-  }
-
-  const onEdit = (targetKey: string, action: "remove" | "add") => {
-    console.log('targetkey', targetKey)
-    if(action === "remove") {
-        let nkey = activeKey;
-        let lastIndex = -1;
-        const _panes = panesRef.current.filter((pane) => pane.key !== `${targetKey}`);
-        if (panes.length && activeKey === targetKey) {
-        if (lastIndex >= 0) {
-            nkey = panes[lastIndex].key;
-        } else {
-            nkey = panes[0].key;
-        }
-        }
-        setActiveKey(nkey);
-        panesRef.current = _panes;
-        setPanes(panesRef.current);
-        let editor = editors[`editor_${targetKey}`];
-        let el = document.getElementById(`editor_${targetKey}`);
-        console.log(el);
-        editor.dispose();
-        editor._domElement = null;
-        editor = null;
-        el?.remove();
-        el = null;
-        editors[`editor_${targetKey}`] = null;
-        forceUpdate();
-    }
   };
 
+  const onEdit = (targetKey: string, action: 'remove' | 'add') => {
+    if (action === 'remove') {
+      let nkey = activeKey;
+      const lastIndex = -1;
+      const iPanes = panesRef.current.filter((pane) => pane.key !== `${targetKey}`);
+      if (panes.length > 0 && activeKey === targetKey) {
+        if (lastIndex > 0) {
+          nkey = iPanes[lastIndex].key;
+        } else {
+          nkey = iPanes[0].key;
+        }
+      }
+      setActiveKey(nkey);
+      panesRef.current = iPanes;
+      setPanes(panesRef.current);
+      let editor = editors[`editor_${targetKey}`];
+      let el = document.getElementById(`editor_${targetKey}`);
+      editor?.dispose();
+      editor = null;
+      el?.remove();
+      el = null;
+      editors[`editor_${targetKey}`] = null;
+      forceUpdate();
+    }
+  };
 
   const setEditorId = (key: string) => {
     return `editor_${key}`;
   };
 
-  const saveFile = () => {
-    setSaving(true);
-    const editor = editors[`editor_${activeKey}`];
-    saveFileContent(activeKey.replace('file_', ''), editor.getValue())
-      .then(() => {
-        setSaving(false);
-        message.success('文件保存成功');
-      })
-      .catch((e) => {
-        console.log(e);
-        setSaving(false);
-      });
-  }
-
-  const restart = () => {
-    restartServer().then(() => {
-      message.success('nginx服务器重启成功');
-    })
-  }
-
-  const refresh = () => {
-    getFileList().then(setFiles);
-    message.success("列表刷新完成");
-  }
-
-  const showFile = async (file: string, isDirectory: boolean) => {
-    if(isDirectory) {
+  const showFile = React.useCallback(async (file: string, isDirectory: boolean) => {
+    if (isDirectory) {
       return;
     }
-    const {content, changes} = await getFileContent(file);
-    
-    const activeKey: string = `file_${file}`;
-    const has = panesRef.current.filter(item => item.key === activeKey);
-    if(has && has.length > 0) {
-        setActiveKey(activeKey);
-        return;
+    const { content, changes } = await getFileContent(file);
+    currentfile = file;
+    const iActiveKey: string = `file_${file}`;
+    const has = panesRef.current.filter((item) => item.key === iActiveKey);
+    if (has && has.length > 0) {
+      setActiveKey(iActiveKey);
+      return;
     }
     panesRef.current.push({
       title: file,
-      key: activeKey,
+      key: iActiveKey,
     });
-
     setPanes(panesRef.current);
-    forceUpdate();
-    setActiveKey(activeKey);
-    console.log(file, panesRef.current);
-    console.log(document.getElementById(`editor_${activeKey}`));
+    setActiveKey(iActiveKey);
     let editor: monaco.editor.IStandaloneCodeEditor;
-    const editorEl = document.getElementById(`editor_${activeKey}`);
+    const editorEl = document.getElementById(`editor_${iActiveKey}`);
     if (editorEl) {
-      const model = monaco.editor.createModel("","shell");
-
+      const model = monaco.editor.createModel('', 'shell');
       editor = monaco.editor.create(editorEl, {
         value: content,
         language: 'shell',
@@ -211,54 +143,24 @@ export default (): React.ReactNode => {
         fontSize: 18,
         theme: 'vs-dark',
         model,
-        // minimap: false,
       });
       editor.setValue(content);
-      const subkey = activeKey.replace("file_", "");
-      lastContent.set(subkey, content);
-      editors[`editor_${activeKey}`] = editor;
-      const _changes = changes.map(change => {
-        return JSON.parse(JSON.parse(change).data)[0]
+      editors[`editor_${iActiveKey}`] = editor;
+      changes.forEach(async (change: string) => {
+        const current_change = JSON.parse(JSON.parse(change).data);
+        freeHanldeChange.set(file, true);
+        editor.executeEdits(editor.getValue(), current_change);
+        freeHanldeChange.set(file, false);
       });
-      console.log("_changes", _changes)
-      editor.executeEdits(subkey, _changes)
-      editor.onDidChangeModelContent(event => {
-        setTimeout(() => {
-          if(lastContent.get(subkey) === editor.getValue()) {
-            return;
-          }
-          lastContent.set(subkey, editor.getValue())
-          console.log('lastContent', lastContent);
-          console.log('content', editor.getValue())
-          console.log(event.changes);
-          socket.emit('execCmd', JSON.stringify({
-            filename: file,
-            data: JSON.stringify(event.changes)
-          }))
-        }, 0)
-        
-      }); 
+      editor.onDidChangeModelContent(changeModelContent);
     }
-  };
+    forceUpdate();
+  }, []);
+
   return (
     <div className={styles.main}>
       <div className={styles.container}>
-        <div className={styles.files}>
-          {files.map((item) => (
-            <Tooltip title={item.data} key={item.data}>
-            <div
-              key={item.data}
-              className={styles.file}
-              onClick={() => {
-                showFile(item.data, item.isDirectory);
-              }}
-            >
-              {item.isDirectory ? <RightOutlined />: <ProfileOutlined />}
-              <div className={styles.cfile}>{item.data}</div>
-            </div>
-            </Tooltip>
-          ))}
-        </div>
+        <FilesTree files={files} showFile={showFile} />
         <Tabs
           hideAdd
           onChange={onChange}
@@ -270,33 +172,30 @@ export default (): React.ReactNode => {
         >
           {panesRef.current.map((pane) => (
             <TabPane tab={pane.title} key={pane.key} className={styles.tabContent}>
-              <div className={styles.editor} id={setEditorId(pane.key)}></div>
+              <div className={styles.editor} id={setEditorId(pane.key)} />
             </TabPane>
           ))}
         </Tabs>
       </div>
-      <div className={styles.toolbar}>
-        <Tooltip title="刷新列表">
-          <Button type="primary" onClick={refresh} icon={<ReloadOutlined />} />
-        </Tooltip>
-        <Button type="primary" loading={saving} onClick={saveFile}>
-          保存
-        </Button>
-        <Button type="primary" loading={saving} onClick={restart}>
-          重启nginx
-        </Button>
-        <Button onClick={openCreate}>
-          新建文件
-        </Button>
-      </div>
-      <Modal title="新增文件" visible={isCreateModalVisible} onOk={handleOk} onCancel={handleCancel}>
-        <Form
-            form={form}
-            layout="vertical"
-          >
-            <Form.Item label="文件名" required tooltip="请输入文件名.server结尾" name="filename">
-              <Input placeholder="请输入文件名以.server结尾" />
-            </Form.Item>
+      <MainBar
+        refresh={refresh}
+        saveFile={saveFile}
+        restart={restart}
+        openCreate={openCreate}
+        saving={saving}
+        reloading={reloading}
+      />
+
+      <Modal
+        title="新增文件"
+        visible={isCreateModalVisible}
+        onOk={handleOk}
+        onCancel={handleCancel}
+      >
+        <Form form={form} layout="vertical">
+          <Form.Item label="文件名" required tooltip="请输入文件名.server结尾" name="filename">
+            <Input placeholder="请输入文件名以.server结尾" />
+          </Form.Item>
         </Form>
       </Modal>
     </div>

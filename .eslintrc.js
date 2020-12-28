@@ -5,4 +5,11 @@ module.exports = {
     page: true,
     REACT_APP_ENV: true,
   },
+  settings: {
+    'import/resolver': {
+      node: {
+        extensions: ['.js', '.jsx', '.ts', '.tsx'],
+      },
+    },
+  },
 };

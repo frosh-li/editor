@@ -11,48 +11,43 @@ export default defineConfig({
     config
       // 修改 entry 配置
       .entry('editor.worker')
-        .add('monaco-editor/esm/vs/editor/editor.worker.js')
-        .end()
-        .output
-        .globalObject("self")
-        .path(path.resolve(__dirname,'../dist'))
-        .filename('[name].bundle.js');
+      .add('monaco-editor/esm/vs/editor/editor.worker.js')
+      .end()
+      .output.globalObject('self')
+      .path(path.resolve(__dirname, '../dist'))
+      .filename('[name].bundle.js');
     config
       // 修改 entry 配置
       .entry('json.worker')
-        .add('monaco-editor/esm/vs/language/json/json.worker')
-        .end()
-        .output
-        .globalObject("self")
-        .path(path.resolve(__dirname,'../dist'))
-        .filename('[name].bundle.js');
+      .add('monaco-editor/esm/vs/language/json/json.worker')
+      .end()
+      .output.globalObject('self')
+      .path(path.resolve(__dirname, '../dist'))
+      .filename('[name].bundle.js');
     config
       // 修改 entry 配置
       .entry('css.worker')
-        .add('monaco-editor/esm/vs/language/css/css.worker')
-        .end()
-        .output
-        .globalObject("self")
-        .path(path.resolve(__dirname,'../dist'))
-        .filename('[name].bundle.js');
+      .add('monaco-editor/esm/vs/language/css/css.worker')
+      .end()
+      .output.globalObject('self')
+      .path(path.resolve(__dirname, '../dist'))
+      .filename('[name].bundle.js');
     config
       // 修改 entry 配置
       .entry('html.worker')
-        .add('monaco-editor/esm/vs/language/html/html.worker')
-        .end()
-        .output
-        .globalObject("self")
-        .path(path.resolve(__dirname,'../dist'))
-        .filename('[name].bundle.js');
+      .add('monaco-editor/esm/vs/language/html/html.worker')
+      .end()
+      .output.globalObject('self')
+      .path(path.resolve(__dirname, '../dist'))
+      .filename('[name].bundle.js');
     config
       // 修改 entry 配置
       .entry('ts.worker')
-        .add('monaco-editor/esm/vs/language/typescript/ts.worker')
-        .end()
-        .output
-        .globalObject("self")
-        .path(path.resolve(__dirname,'../dist'))
-        .filename('[name].bundle.js');
+      .add('monaco-editor/esm/vs/language/typescript/ts.worker')
+      .end()
+      .output.globalObject('self')
+      .path(path.resolve(__dirname, '../dist'))
+      .filename('[name].bundle.js');
   },
   hash: true,
   antd: {},

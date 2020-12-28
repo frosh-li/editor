@@ -1,14 +1,13 @@
-
-import { Settings as LayoutSettings} from '@ant-design/pro-layout';
+import { Settings as LayoutSettings } from '@ant-design/pro-layout';
 import { notification } from 'antd';
 import { RequestConfig, RunTimeLayoutConfig } from 'umi';
 import { ResponseError } from 'umi-request';
 import defaultSettings from '../config/defaultSettings';
 
 // @ts-ignore
+// eslint-disable-next-line no-restricted-globals
 self.MonacoEnvironment = {
-  getWorkerUrl: function (moduleId, label) {
-    console.log('start to load', moduleId, label);
+  getWorkerUrl(moduleId: String, label: String) {
     if (label === 'json') {
       return './json.worker.bundle.js';
     }
@@ -45,9 +44,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState }) => {
     rightContentRender: () => null,
     disableContentMargin: false,
     footerRender: () => null,
-    onPageChange: () => {
-    },
-    pure: true,
+    onPageChange: () => {},
     menuHeaderRender: null,
     headerRender: () => null,
     // 自定义 403 页面
